@@ -2,6 +2,7 @@ const express = require("express");
 
 const app = express();
 const port = 3000;
+
 app.use(cors);
 app.use(express.json());
 
@@ -22,8 +23,11 @@ function parseID(req, res, next) {
     next();
 }
 
+const router = express.Router();
+app.use("/tasks", router);
+
 // get all tasks (allow query params for filtering)
-app.get("/tasks", (req, res) => {
+router.get("/", (req, res) => {
     const { description } = req.query;
     if (description) {
         const filteredTasks = tasks.filter((t) => t.description?.includes(description));
@@ -33,7 +37,7 @@ app.get("/tasks", (req, res) => {
 });
 
 // get task by ID
-app.get("/tasks/:id", parseID, (req, res) => {
+router.get("/:id", parseID, (req, res) => {
     const { id } = req.params;
     const task = tasks.find((task) => task.id === id);
     if (!task) {
@@ -43,7 +47,7 @@ app.get("/tasks/:id", parseID, (req, res) => {
 });
 
 // update task by ID
-app.put("/tasks/:id", parseID, (req, res) => {
+router.put("/:id", parseID, (req, res) => {
     const { id } = req.params;
     const { description, done } = req.body;
     const task = tasks.find((task) => task.id === id);
@@ -60,7 +64,7 @@ app.put("/tasks/:id", parseID, (req, res) => {
 });
 
 // create a new task
-app.post("/tasks", (req, res) => {
+router.post("/", (req, res) => {
     const { description } = req.body;
     if (!description) {
         return res.status(400).json({ error: "Task description is missing" });
@@ -75,7 +79,7 @@ app.post("/tasks", (req, res) => {
 });
 
 // delete a task by ID
-app.delete("/tasks/:id", parseID, (req, res) => {
+router.delete("/:id", parseID, (req, res) => {
     const { id } = req.params;
 
     const taskIndex = tasks.findIndex((task) => task.id === id);
